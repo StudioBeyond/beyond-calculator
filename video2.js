@@ -13,6 +13,8 @@ const value = {
   totalGbp: 0,
   totalBase: 0,
   rateUsdGbp: rateUsdGbp,
+  discountRate: 1,
+  discountRateText: '',
 
   typeValue: 0,
   typeCount: 0,
@@ -165,6 +167,22 @@ function calculateRadioGroups() {
   });
 }
 
+function calculateDiscountRate(videoCount) {
+  if (videoCount <= 2) {
+    value.discountRateText = "0%";
+    return 1;
+  }
+
+  const discountRateBase = 0.025; // Base discount rate of 2.5%
+  const discountRate = 1 - ((videoCount - 2) * discountRateBase);
+  const roundedDiscountRate = parseFloat(discountRate.toFixed(3));
+  const discountRateInverse = parseFloat(
+    ((1 - roundedDiscountRate) * 100).toFixed(1)
+  );
+  value.discountRateText = `${discountRateInverse}%`;
+  return roundedDiscountRate;
+}
+
 /**
  * Timeline
  */
@@ -229,6 +247,9 @@ function calculateTotal() {
     value.voiceValue +
     value.socialValue +
     value.photoValue;
+
+  value.discountRate = calculateDiscountRate(value.typeCount);
+  value.totalUsd *= value.discountRate;
 
   updateTimelineDisplay();
 
