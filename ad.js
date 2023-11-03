@@ -1,11 +1,12 @@
 ////////////////////////////////////////
 // 🎁 Variables
 ////////////////////////////////////////
-const calcAttribute = 'by-calc-element';
-const valueAttribute = 'by-calc-value';
-const activeClass = 'is-active-inputactive';
+const CALC_ATTRIBUTE = 'by-calc-element';
+const VALUE_ATTRIBUTE = 'by-calc-value';
+const FS_ACTIVE_CLASS_ATTRIBUTE = 'fs-inputactive-class';
+const FS_ACTIVE_CLASS_SELECTOR = '[fs-inputactive-class]';
 
-const calcForm = document.querySelector(`[${calcAttribute}="form"]`);
+const calcForm = document.querySelector(`[${CALC_ATTRIBUTE}="form"]`);
 const rateUsdGbp = parseFloat(calcForm.getAttribute('by-currency-rate'));
 
 const value = {
@@ -24,47 +25,33 @@ const value = {
 
 };
 
-// mgmtRangesTest = [
-//   { min: -Infinity, max: 10000, value: 1993 },
-//   { min: 10000 + 1, max: 50000, value: 0.2 },
-//   { min: 50000 + 1, max: Infinity, value: 0.15 },
-// ]
-
 ////////////////////////////////////////
 // 📦 Elements & Variables
 ////////////////////////////////////////
 const sliderComponents = Array.from(document.querySelectorAll(
-  `[${calcAttribute}^="slider"]`));
+  `[${CALC_ATTRIBUTE}^="slider"]`));
 const radioButtons = Array.from(document.querySelectorAll(
-  `[${calcAttribute}^="radio"]`));
+  `[${CALC_ATTRIBUTE}^="radio"]`));
 const checkboxButtons = Array.from(document.querySelectorAll(
-  `[${calcAttribute}^="checkbox"]`));
+  `[${CALC_ATTRIBUTE}^="checkbox"]`));
 
-const sliderGroups = groupElements(sliderComponents, calcAttribute);
-const radioGroups = groupElements(radioButtons, calcAttribute);
-const checkboxGroups = groupElements(checkboxButtons, calcAttribute);
-
-// console.log(sliderGroups);
-// console.log(radioGroups);
-// console.log(checkboxGroups);
+const sliderGroups = groupElements(sliderComponents);
+const radioGroups = groupElements(radioButtons);
+const checkboxGroups = groupElements(checkboxButtons);
 
 // Subtotals
 const spendDisplay = document.querySelector(
-  `[${calcAttribute}="display-spend"]`);
+  `[${CALC_ATTRIBUTE}="display-spend"]`);
 const managementDisplay = document.querySelector(
-  `[${calcAttribute}="display-management"]`);
+  `[${CALC_ATTRIBUTE}="display-management"]`);
 const mgmtRanges = Function(
-  `"use strict"; return (${managementDisplay.getAttribute(valueAttribute)})`)();
+  `"use strict"; return (${managementDisplay.getAttribute(VALUE_ATTRIBUTE)})`)();
 
 // Totals
-const totalDisplayTextUsd = document.querySelector(
-  `[${calcAttribute}="total-display-text-usd"]`);
-const totalDisplayUsd = totalDisplayTextUsd.querySelector(
-  `[${calcAttribute}="total-display"]`);
-const totalDisplayTextGbp = document.querySelector(
-  `[${calcAttribute}="total-display-text-gbp"]`);
-const totalDisplayGbp = totalDisplayTextGbp.querySelector(
-  `[${calcAttribute}="total-display"]`);
+const totalDisplayTextUsd = document.querySelector(`[${CALC_ATTRIBUTE}="total-display-text-usd"]`);
+const totalDisplayUsd = totalDisplayTextUsd.querySelector(`[${CALC_ATTRIBUTE}="total-display"]`);
+const totalDisplayTextGbp = document.querySelector(`[${CALC_ATTRIBUTE}="total-display-text-gbp"]`);
+const totalDisplayGbp = totalDisplayTextGbp.querySelector(`[${CALC_ATTRIBUTE}="total-display"]`);
 value.totalBase = parseFloat(totalDisplayUsd.getAttribute('by-calc-total-base'));
 
 ////////////////////////////////////////
@@ -73,10 +60,10 @@ value.totalBase = parseFloat(totalDisplayUsd.getAttribute('by-calc-total-base'))
 /**
  * Utility
  */
-function groupElements(elements, attribute) {
+function groupElements(elements) {
   const groups = {};
   elements.forEach(element => {
-    const attributeValue = element.getAttribute(attribute);
+    const attributeValue = element.getAttribute(CALC_ATTRIBUTE);
     const groupName = attributeValue.substring(attributeValue.indexOf('-') + 1);
     if (!groups[groupName]) {
       groups[groupName] = [];
@@ -94,8 +81,10 @@ function updateSliderDisplay(input, display) {
 
 function sliderListeners(sliderComponents) {
   sliderComponents.forEach(component => {
-    const input = component.querySelector(`[${calcAttribute}="input"]`);
-    const display = component.querySelector(`[${calcAttribute}="display"]`);
+    const input = component.querySelector(`[${CALC_ATTRIBUTE}="input"]`);
+    const display = component.querySelector(`[${CALC_ATTRIBUTE}="display"]`);
+
+    updateSliderDisplay(input, display);
     input.addEventListener('input', () => {
       updateSliderDisplay(input, display);
       calculateTotal();
@@ -106,7 +95,7 @@ function sliderListeners(sliderComponents) {
 function calculateSliders(groupObject) {
   Object.keys(groupObject).forEach(key => {
     const inputElement = groupObject[key][0].querySelector(
-      `[${calcAttribute}="input"]`);
+      `[${CALC_ATTRIBUTE}="input"]`);
     const InputValue = parseFloat(inputElement.value);
     value[`${key.toLowerCase()}Value`] = InputValue;
   });
@@ -132,22 +121,27 @@ function observeMutations(elements) {
 }
 
 // Assigning selected values
+function getFsActiveClass(array) {
+  return array[0].querySelector(
+    FS_ACTIVE_CLASS_SELECTOR).getAttribute(FS_ACTIVE_CLASS_ATTRIBUTE);
+}
+
 function radioSelector(array) {
-  return array.find(item => item.classList.contains(activeClass));
+  return array.find(item => item.classList.contains(getFsActiveClass(array)));
 }
 
 function checkboxSelector(array) {
-  return array.filter(item => item.classList.contains(activeClass));
+  return array.filter(item => item.classList.contains(getFsActiveClass(array)));
 }
 
 function radioAggregator(selected) {
-  return selected ? parseFloat(selected.getAttribute(valueAttribute)) : 0;
+  return selected ? parseFloat(selected.getAttribute(VALUE_ATTRIBUTE)) : 0;
 }
 
 function checkboxAggregator(selectedArray) {
   return selectedArray ?
     selectedArray.reduce((sum, element) =>
-      sum + parseFloat(element.getAttribute(valueAttribute)), 0) :
+      sum + parseFloat(element.getAttribute(VALUE_ATTRIBUTE)), 0) :
     0;
 }
 
@@ -157,17 +151,6 @@ function calculateGroups(groupObject, selectorFn, aggregatorFn) {
     value[`${key.toLowerCase()}Value`] = aggregatorFn(selectedElements);
   });
 }
-
-// function getValueFromAttribute(element, mgmtRanges) {
-//   const number = parseFloat(element.getAttribute(valueAttribute));
-//   if (isNaN(number)) {
-//     console.log(number); // Output: "number"
-//     console.log(typeof number); // Output: "number"
-
-//     return null;
-//   }
-//   return getValueInRange(number, mgmtRanges);
-// }
 
 // Management Total
 function getValueInRange(number, mgmtRanges) {
@@ -182,16 +165,10 @@ function getValueInRange(number, mgmtRanges) {
 
 function calculateManagement() {
   value.totalManagementRate = getValueInRange(value.totalSpend, mgmtRanges);
-  console.log(value.totalManagementRate)
 
-  value.totalManagement =
-    value.totalManagementRate > 1 ?
-    value.totalManagementRate :
-    value.totalSpend * value.totalManagementRate;
-
-  if (value.platformValue > 1) {
-    value.totalManagement *= (value.platformValue - 1 * 0.5) + 1
-  }
+  value.totalManagement = value.totalManagementRate > 1 ?
+    value.totalManagementRate * value.platformValue :
+    value.totalSpend * value.totalManagementRate * value.platformValue;
 }
 
 // Animate Totals
@@ -234,10 +211,19 @@ function calculateTotal() {
   calculateGroups(radioGroups, radioSelector, radioAggregator);
   calculateGroups(checkboxGroups, checkboxSelector, checkboxAggregator);
 
-  value.totalSpend = value.revenueValue * value.growthValue
-  calculateManagement()
+  value.platformValue = value.platformValue > 1 ? value.platformValue : 1
 
-  value.totalUsd = value.totalSpend + value.totalManagement
+  value.totalSpend = value.revenueValue * value.growthValue
+
+  if (value.totalSpend > 0) {
+    calculateManagement()
+    value.totalUsd = value.totalSpend + value.totalManagement
+  } else {
+    value.totalSpend = 0
+    value.totalManagement = 0
+    value.totalUsd = 0
+  }
+
   value.totalGbp = value.totalUsd * value.rateUsdGbp;
 
   updateDisplayAll();
@@ -245,11 +231,16 @@ function calculateTotal() {
   console.table(value);
 }
 
+function scrollToTopInstantly() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'instant'
+  });
+}
 ////////////////////////////////////////
 // 🏁 Initialize Code
 ////////////////////////////////////////
-var Webflow = Webflow || [];
-Webflow.push(function () {
+function initCalc() {
   sliderListeners(sliderComponents);
   observeMutations(radioButtons);
   observeMutations(checkboxButtons);
@@ -259,38 +250,34 @@ Webflow.push(function () {
 
   calculateTotal();
   scrollToTopInstantly();
-});
-
-function scrollToTopInstantly() {
-  window.scrollTo({
-    top: 0,
-    behavior: 'instant'
-  });
 }
+
+var Webflow = Webflow || [];
+Webflow.push(function () {
+  initCalc()
+});
 
 ////////////////////////////////////////
 // 💸 Currency Toggle
 ////////////////////////////////////////
-const currencyAttribute = 'by-currency-element'
-const currencyForm = document.querySelector(`[${currencyAttribute}="form"]`);
-const currencyCheckbox = document.querySelector(`[${currencyAttribute}="checkbox"]`);
+const CURRENCY_ATTRIBUTE = 'by-currency-element'
+const currencyForm = document.querySelector(`[${CURRENCY_ATTRIBUTE}="form"]`);
+const currencyCheckbox = document.querySelector(`[${CURRENCY_ATTRIBUTE}="checkbox"]`);
 const [isUsd, isGbp] = currencyForm.getAttribute('by-currency-classes').split(', ');
-
-// const currencyPreference = localStorage.getItem('currencyPreference');
-// currencyPreference === isGbp ? currencyCheckbox.click() : null;
+const useCurrencyPreference = false
 
 const updateClasses = () => {
-  if (currencyCheckbox.checked) {
-    currencyForm.classList.add(isGbp);
-    currencyForm.classList.remove(isUsd);
-    localStorage.setItem('currencyPreference', isGbp);
-  } else {
-    currencyForm.classList.add(isUsd);
-    currencyForm.classList.remove(isGbp);
-    localStorage.setItem('currencyPreference', isUsd);
-  }
+  const selectedClass = currencyCheckbox.checked ? isGbp : isUsd;
+  const removedClass = currencyCheckbox.checked ? isUsd : isGbp;
+  currencyForm.classList.add(selectedClass);
+  currencyForm.classList.remove(removedClass);
+  localStorage.setItem('currencyPreference', selectedClass);
   animateTotalDisplay();
 };
+if (useCurrencyPreference) {
+  const currencyPreference = localStorage.getItem('currencyPreference');
+  currencyPreference === isGbp ? currencyCheckbox.click() : null;
+}
 
 updateClasses();
 currencyCheckbox.addEventListener('change', updateClasses);
