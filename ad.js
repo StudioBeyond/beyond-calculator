@@ -85,7 +85,7 @@ function sliderListeners(sliderComponents) {
     const display = component.querySelector(`[${CALC_ATTRIBUTE}="display"]`);
 
     updateSliderDisplay(input, display);
-    input.addEventListener('input', () => {
+    input.addEventListener('change', () => {
       updateSliderDisplay(input, display);
       calculateTotal();
     });
