@@ -193,7 +193,6 @@ function calculateTotal() {
 
   value.timeRateValue = value.timelineValue
   value.timeRateCount = value.timeRateValue <= 1 ? 1 : 0.5;
-  value.timeRateCount = value.identityValue !== 0 ? value.timeRateCount : 0;
 
   value.totalUsd =
     value.identityValue +
