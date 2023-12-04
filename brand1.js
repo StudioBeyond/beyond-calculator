@@ -17,6 +17,7 @@ const value = {
   identityValue: 0,
   positioningValue: 0,
   messagingValue: 0,
+  namingValue: 0,
   guidelineValue: 0,
   portalValue: 0,
   kitValue: 0,
@@ -199,6 +200,7 @@ function calculateTotal() {
     value.identityValue +
     value.positioningValue +
     value.messagingValue +
+    value.namingValue +
     value.guidelineValue +
     value.kitValue +
     value.portalValue
@@ -224,6 +226,7 @@ Webflow.push(function () {
   radioGroups.guideline[0].click()
   radioGroups.identity[0].click()
   radioGroups.messaging[0].click()
+  radioGroups.naming[0].click()
   radioGroups.portal[0].click()
   radioGroups.positioning[0].click()
   radioGroups.timeline[0].click()
