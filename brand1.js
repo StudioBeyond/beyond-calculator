@@ -1,6 +1,7 @@
 ////////////////////////////////////////
 // 🎁 Variables
 ////////////////////////////////////////
+
 const calcAttribute = 'by-calc-element';
 const valueAttribute = 'by-calc-value';
 const activeClass = 'is-active-inputactive';
